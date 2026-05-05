@@ -7,6 +7,10 @@ defineProps({
     type: Boolean,
     default: false,
   },
+  isMobileView: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 defineEmits(['close', 'sign-out'])
@@ -14,23 +18,23 @@ defineEmits(['close', 'sign-out'])
 
 <template>
   <Transition name="fade">
-    <div v-if="isOpen" class="sidebar-backdrop" @click="$emit('close')" />
+    <div v-if="isMobileView && isOpen" class="sidebar-backdrop" @click="$emit('close')" />
   </Transition>
 
   <aside class="sidebar" :class="{ 'is-open': isOpen }">
     <div class="sidebar-top">
-      <RouterLink class="brand" to="/dashboard">
+      <RouterLink class="brand" to="/dashboard" aria-label="Dashboard home">
         <span class="brand-mark">🎓</span>
-        <span class="brand-name">EDUPORTAL</span>
       </RouterLink>
 
       <button
+        v-if="isMobileView"
         class="icon-button mobile-only"
         type="button"
         aria-label="Close sidebar"
         @click="$emit('close')"
       >
-        ✕
+        <span class="menu-close-icon" aria-hidden="true"></span>
       </button>
     </div>
 
@@ -48,7 +52,11 @@ defineEmits(['close', 'sign-out'])
         <span>{{ link.label }}</span>
       </RouterLink>
     </nav>
-    <button class="button button-gold full-width sidebar-signout mobile-only" @click="$emit('sign-out')">
+    <button
+      v-if="isMobileView"
+      class="button button-gold full-width sidebar-signout mobile-only"
+      @click="$emit('sign-out')"
+    >
       Sign Out
     </button>
   </aside>

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import PublicNavbar from './components/PublicNavbar.vue'
 import PublicFooter from './components/PublicFooter.vue'
@@ -10,6 +10,14 @@ import { accountProfile } from './data/mockData'
 const route = useRoute()
 const router = useRouter()
 const sidebarOpen = ref(false)
+const isMobileView = ref(false)
+
+const syncMobileView = () => {
+  isMobileView.value = window.innerWidth <= 920
+  if (!isMobileView.value) {
+    sidebarOpen.value = false
+  }
+}
 
 const isDashboardLayout = computed(() => route.meta.layout === 'dashboard')
 const showPublicFooter = computed(() => route.meta.showFooter !== false)
@@ -32,6 +40,15 @@ watch(
     sidebarOpen.value = false
   },
 )
+
+onMounted(() => {
+  syncMobileView()
+  window.addEventListener('resize', syncMobileView)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncMobileView)
+})
 </script>
 
 <template>
@@ -40,6 +57,7 @@ watch(
       <div class="dashboard-shell">
         <DashboardSidebar
           :is-open="sidebarOpen"
+          :is-mobile-view="isMobileView"
           @close="sidebarOpen = false"
           @sign-out="handleSignOut"
         />
@@ -53,12 +71,17 @@ watch(
 
             <div class="dashboard-header-actions">
               <button
+                v-if="isMobileView"
                 class="icon-button mobile-only"
                 type="button"
                 aria-label="Open sidebar navigation"
                 @click="sidebarOpen = true"
               >
-                ☰
+                <span class="menu-icon" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </span>
               </button>
               <div class="dashboard-header-profile">
                 <p class="dashboard-profile-name">{{ headerStudentName }}</p>

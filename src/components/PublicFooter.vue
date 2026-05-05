@@ -8,7 +8,6 @@ import { RouterLink } from 'vue-router'
       <div>
         <div class="brand footer-brand">
           <span class="brand-mark">🎓</span>
-          <span class="brand-name">EduPortal</span>
         </div>
         <p class="footer-copy">
           A simple student management platform for enrollment, course discovery, and academic
@@ -37,7 +36,7 @@ import { RouterLink } from 'vue-router'
     </div>
 
     <div class="container footer-bottom">
-      <p>© 2026 EduPortal Student Management System. All rights reserved.</p>
+      <p>© 2026 Student Management System. All rights reserved.</p>
       <div class="footer-meta-links">
         <RouterLink to="/">Privacy Policy</RouterLink>
         <RouterLink to="/">Terms of Service</RouterLink>

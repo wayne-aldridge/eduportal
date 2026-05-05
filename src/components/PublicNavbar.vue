@@ -17,9 +17,8 @@ watch(
 <template>
   <header class="site-header">
     <div class="container nav-wrap">
-      <RouterLink class="brand" to="/" aria-label="EduPortal home">
+      <RouterLink class="brand" to="/" aria-label="Home">
         <span class="brand-mark">🎓</span>
-        <span class="brand-name">EduPortal</span>
       </RouterLink>
 
       <nav class="desktop-nav" aria-label="Primary">
@@ -40,13 +39,17 @@ watch(
       </div>
 
       <button
-        class="icon-button mobile-only"
+        class="icon-button mobile-only nav-toggle"
         type="button"
         :aria-expanded="mobileOpen"
         aria-label="Toggle navigation menu"
         @click="mobileOpen = !mobileOpen"
       >
-        ☰
+        <span class="menu-icon" :class="{ 'is-open': mobileOpen }" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
       </button>
     </div>
 
@@ -63,7 +66,7 @@ watch(
             {{ link.label }}
           </RouterLink>
           <RouterLink class="mobile-nav-link" to="/login">Login</RouterLink>
-          <RouterLink class="button button-gold full-width" to="/enrollment">
+          <RouterLink class="mobile-nav-link" to="/enrollment">
             Enroll Now
           </RouterLink>
         </nav>

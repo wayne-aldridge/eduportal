@@ -105,12 +105,20 @@ const dashboardProgress = computed(() => [
 
           <article v-for="course in enrolledCourses" :key="course.code" class="course-row">
             <div class="course-identity">
+              <span class="course-mobile-label">Course</span>
               <strong>{{ course.code }}</strong>
               <p>{{ course.title }}</p>
             </div>
-            <div class="course-meta">{{ course.instructor }}</div>
-            <div class="course-meta">{{ course.schedule }}</div>
+            <div class="course-meta">
+              <span class="course-mobile-label">Mentor</span>
+              {{ course.instructor }}
+            </div>
+            <div class="course-meta">
+              <span class="course-mobile-label">Schedule</span>
+              {{ course.schedule }}
+            </div>
             <div class="course-status">
+              <span class="course-mobile-label">Status</span>
               <span class="status-pill course-pill">{{ course.status }}</span>
             </div>
           </article>
