@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { publicNavLinks } from '../data/mockData'
+import AppLogo from './AppLogo.vue'
 
 const route = useRoute()
 const mobileOpen = ref(false)
@@ -18,7 +19,7 @@ watch(
   <header class="site-header">
     <div class="container nav-wrap">
       <RouterLink class="brand" to="/" aria-label="Home">
-        <span class="brand-mark">🎓</span>
+        <AppLogo class="desktop-logo" />
       </RouterLink>
 
       <nav class="desktop-nav" aria-label="Primary">

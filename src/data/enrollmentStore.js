@@ -1,12 +1,18 @@
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
+import { courses } from './mockData'
 
-export const enrollmentCourseOptions = [
-  'BS Information Technology',
-  'BS Computer Science',
-  'BS Business Administration',
-  'BS Hospitality Management',
-  'Bachelor of Elementary Education',
-]
+const APPLICATIONS_KEY = 'eduportal_applications'
+const LEGACY_APPLICATIONS_KEY = 'enrollmentRequests'
+const SESSION_KEY = 'eduportal_session'
+
+export const enrollmentCourseOptions = courses.map((course) => ({
+  title: course.title,
+  category: course.category,
+  duration: course.duration,
+  image: course.image,
+  alt: course.alt,
+  description: course.description,
+}))
 
 export const enrollmentRequirementItems = [
   'Form 138 / Report Card',
@@ -16,35 +22,120 @@ export const enrollmentRequirementItems = [
   'Enrollment Application Form',
 ]
 
-const createDefaultState = () => ({
-  submitted: false,
-  selectedCourse: 'BS Information Technology',
-  studentInfo: {
-    fullName: 'Alex Henderson',
-    studentId: 'To be assigned by the school',
-    email: 'alex.j@student.edu',
-    phone: '+1 (555) 210-1001',
-    address: '123 Academic Way, Education City',
-    yearLevel: '1st Year',
-    birthdate: '2006-03-18',
-    gender: 'Male',
-    studentType: 'New Student',
-  },
-  completedRequirements: [
-    'Form 138 / Report Card',
-    'Certificate of Good Moral Character',
-    'Enrollment Application Form',
-  ],
-  pendingRequirements: ['PSA Birth Certificate', '2x2 ID Picture'],
-  status: 'Pending Review',
-  recentActivity: [
-    { action: 'Account created', when: 'Today' },
-    { action: 'Enrollment application submitted', when: 'Today' },
-    { action: 'Requirements checklist completed', when: 'Today' },
-  ],
+const parseStoredValue = (key, fallback) => {
+  if (typeof window === 'undefined') return fallback
+
+  try {
+    const rawValue = window.localStorage.getItem(key)
+    return rawValue ? JSON.parse(rawValue) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+const saveStoredValue = (key, value) => {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(key, JSON.stringify(value))
+}
+
+const buildSessionState = () => ({
+  role: 'Student',
+  activeApplicationId: null,
 })
 
-export const enrollmentSubmission = reactive(createDefaultState())
+const normalizeApplication = (application) => {
+  if (!application) return application
+
+  const completedRequirements = Array.isArray(application.completedRequirements)
+    ? application.completedRequirements
+    : Array.isArray(application.requirements)
+      ? application.requirements
+      : []
+
+  const studentInfo = application.studentInfo || {}
+
+  return {
+    ...application,
+    studentInfo: {
+      ...studentInfo,
+      phone: studentInfo.phone || studentInfo.phoneNumber || '',
+      phoneNumber: studentInfo.phoneNumber || studentInfo.phone || '',
+      studentId: studentInfo.studentId || 'To be assigned by the school',
+    },
+    completedRequirements,
+    pendingRequirements: Array.isArray(application.pendingRequirements)
+      ? application.pendingRequirements
+      : enrollmentRequirementItems.filter((item) => !completedRequirements.includes(item)),
+    status: application.status || 'Pending',
+  }
+}
+
+export const enrollmentState = reactive({
+  applications: parseStoredValue(LEGACY_APPLICATIONS_KEY, parseStoredValue(APPLICATIONS_KEY, [])).map(
+    normalizeApplication,
+  ),
+  session: {
+    ...buildSessionState(),
+    ...parseStoredValue(SESSION_KEY, {}),
+  },
+})
+
+const persistApplications = () => {
+  saveStoredValue(APPLICATIONS_KEY, enrollmentState.applications)
+  saveStoredValue(LEGACY_APPLICATIONS_KEY, enrollmentState.applications)
+}
+
+const persistSession = () => {
+  saveStoredValue(SESSION_KEY, enrollmentState.session)
+}
+
+export const setCurrentRole = (role) => {
+  enrollmentState.session.role = role
+  persistSession()
+}
+
+export const signOutSession = () => {
+  enrollmentState.session.role = 'Student'
+  persistSession()
+}
+
+export const getLatestEnrollmentRequest = () => {
+  if (!enrollmentState.applications.length) return null
+  return enrollmentState.applications[enrollmentState.applications.length - 1] || null
+}
+
+export const currentStudentApplication = computed(() => {
+  if (!enrollmentState.applications.length) return null
+
+  if (enrollmentState.session.activeApplicationId) {
+    return (
+      enrollmentState.applications.find(
+        (application) => application.id === enrollmentState.session.activeApplicationId,
+      ) || null
+    )
+  }
+
+  return getLatestEnrollmentRequest()
+})
+
+export const applicationCounts = computed(() => {
+  const pending = enrollmentState.applications.filter(
+    (application) => application.status === 'Pending',
+  ).length
+  const approved = enrollmentState.applications.filter(
+    (application) => application.status === 'Approved',
+  ).length
+  const rejected = enrollmentState.applications.filter(
+    (application) => application.status === 'Rejected',
+  ).length
+
+  return {
+    total: enrollmentState.applications.length,
+    pending,
+    approved,
+    rejected,
+  }
+})
 
 export const saveEnrollmentSubmission = ({
   selectedCourse,
@@ -55,8 +146,8 @@ export const saveEnrollmentSubmission = ({
     (item) => !completedRequirements.includes(item),
   )
 
-  Object.assign(enrollmentSubmission, {
-    submitted: true,
+  const application = {
+    id: `app-${Date.now()}`,
     selectedCourse,
     studentInfo: {
       ...studentInfo,
@@ -64,11 +155,29 @@ export const saveEnrollmentSubmission = ({
     },
     completedRequirements: [...completedRequirements],
     pendingRequirements,
-    status: 'Pending Review',
-    recentActivity: [
-      { action: 'Account created', when: 'Today' },
-      { action: 'Enrollment application submitted', when: 'Today' },
-      { action: 'Requirements checklist completed', when: 'Today' },
-    ],
-  })
+    status: 'Pending',
+    submittedAt: new Date().toISOString(),
+  }
+
+  enrollmentState.applications = [...enrollmentState.applications, normalizeApplication(application)]
+  enrollmentState.session.activeApplicationId = application.id
+  enrollmentState.session.role = 'Student'
+
+  persistApplications()
+  persistSession()
+
+  return application
+}
+
+export const updateApplicationStatus = (applicationId, status) => {
+  enrollmentState.applications = enrollmentState.applications.map((application) =>
+    application.id === applicationId
+      ? normalizeApplication({
+          ...application,
+          status,
+        })
+      : application,
+  )
+
+  persistApplications()
 }

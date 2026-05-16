@@ -20,7 +20,7 @@ defineProps({
         <div class="course-meta course-meta-inline">
           <span>{{ course.duration }}</span>
         </div>
-        <RouterLink class="course-enroll-link" to="/start-enrollment">
+        <RouterLink class="course-enroll-link" :to="`/enrollment?course=${encodeURIComponent(course.title)}`">
           Enroll Now
         </RouterLink>
       </div>

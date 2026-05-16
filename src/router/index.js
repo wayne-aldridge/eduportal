@@ -9,6 +9,7 @@ import StartEnrollment from '../views/StartEnrollment.vue'
 import StudentDashboard from '../views/StudentDashboard.vue'
 import Enrollment from '../views/Enrollment.vue'
 import Account from '../views/Account.vue'
+import AdminDashboard from '../views/AdminDashboard.vue'
 
 const routes = [
   { path: '/', name: 'home', component: Home, meta: { layout: 'public', title: 'Home' } },
@@ -69,6 +70,18 @@ const routes = [
     name: 'account',
     component: Account,
     meta: { layout: 'dashboard', title: 'Account' },
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminDashboard,
+    meta: { layout: 'dashboard', title: 'Admin Dashboard' },
+  },
+  {
+    path: '/admin/requests',
+    name: 'admin-requests',
+    component: AdminDashboard,
+    meta: { layout: 'dashboard', title: 'Admin Dashboard' },
   },
 ]
 

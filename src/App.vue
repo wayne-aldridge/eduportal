@@ -4,7 +4,7 @@ import { RouterView, useRoute, useRouter } from 'vue-router'
 import PublicNavbar from './components/PublicNavbar.vue'
 import PublicFooter from './components/PublicFooter.vue'
 import DashboardSidebar from './components/DashboardSidebar.vue'
-import { enrollmentSubmission } from './data/enrollmentStore'
+import { currentStudentApplication, signOutSession } from './data/enrollmentStore'
 import { accountProfile } from './data/mockData'
 
 const route = useRoute()
@@ -22,15 +22,30 @@ const syncMobileView = () => {
 const isDashboardLayout = computed(() => route.meta.layout === 'dashboard')
 const showPublicFooter = computed(() => route.meta.showFooter !== false)
 const pageTitle = computed(() => route.meta.title || 'EduPortal')
-const headerStudentName = computed(() => enrollmentSubmission.studentInfo.fullName || accountProfile.name)
-const headerStudentId = computed(() =>
-  enrollmentSubmission.studentInfo.studentId !== 'To be assigned by the school'
-    ? enrollmentSubmission.studentInfo.studentId
-    : accountProfile.studentId,
+const isAdminView = computed(() => route.path.startsWith('/admin'))
+const activeApplication = computed(() => currentStudentApplication.value)
+const headerEyebrow = computed(() =>
+  isAdminView.value ? 'Enrollment Approval' : 'Student Portal',
 )
+const headerName = computed(() =>
+  isAdminView.value
+    ? 'Administrator'
+    : activeApplication.value?.studentInfo.fullName || accountProfile.name,
+)
+const headerMeta = computed(() => {
+  if (isAdminView.value) return 'Admin'
+
+  const studentId = activeApplication.value?.studentInfo.studentId
+  if (studentId && studentId !== 'To be assigned by the school') {
+    return `ID: ${studentId}`
+  }
+
+  return activeApplication.value ? 'ID: To be assigned' : `ID: ${accountProfile.studentId}`
+})
 
 const handleSignOut = async () => {
   sidebarOpen.value = false
+  signOutSession()
   await router.push('/login')
 }
 
@@ -58,14 +73,15 @@ onBeforeUnmount(() => {
         <DashboardSidebar
           :is-open="sidebarOpen"
           :is-mobile-view="isMobileView"
+          :profile-name="headerName"
+          :profile-meta="headerMeta"
           @close="sidebarOpen = false"
-          @sign-out="handleSignOut"
         />
 
         <div class="dashboard-main">
-          <header class="dashboard-header">
+          <header class="dashboard-header dashboard-header-flat">
             <div>
-              <p class="eyebrow">Student Portal</p>
+              <p class="eyebrow">{{ headerEyebrow }}</p>
               <h1>{{ pageTitle }}</h1>
             </div>
 
@@ -83,11 +99,7 @@ onBeforeUnmount(() => {
                   <span></span>
                 </span>
               </button>
-              <div class="dashboard-header-profile">
-                <p class="dashboard-profile-name">{{ headerStudentName }}</p>
-                <p class="dashboard-profile-id">ID {{ headerStudentId }}</p>
-              </div>
-              <button class="button button-dark" type="button" @click="handleSignOut">
+              <button class="button button-dark compact dashboard-header-signout" type="button" @click="handleSignOut">
                 Sign Out
               </button>
             </div>
