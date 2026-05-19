@@ -1881,7 +1881,7 @@ th {
 
 .admin-requests-table {
   min-width: 980px;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .admin-requests-table th,
@@ -1922,7 +1922,7 @@ th {
 
 .admin-requests-table th:nth-child(7),
 .admin-requests-table td:nth-child(7) {
-  width: 11%;
+  width: 14%;
 }
 
 .admin-student-cell strong,
@@ -1970,10 +1970,12 @@ th {
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
+  flex-wrap: wrap;
 }
 
 .admin-action-button {
   min-width: 96px;
+  flex: 1 1 96px;
 }
 
 .admin-reviewed-label {
@@ -2476,6 +2478,36 @@ th {
   padding: 1.1rem 1.15rem 1.2rem;
 }
 
+.course-option-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.course-selected-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.38rem 0.72rem;
+  border-radius: 999px;
+  background: var(--navy);
+  color: var(--white);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.course-selected-pill::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
+}
+
 .course-option-card h3 {
   margin: 0;
   color: var(--navy);
@@ -2508,6 +2540,19 @@ th {
   transform: translateY(-2px);
   border-color: rgba(250, 204, 21, 0.9);
   box-shadow: var(--shadow);
+}
+
+.course-option-card.selected {
+  background:
+    linear-gradient(180deg, rgba(250, 204, 21, 0.14), rgba(250, 204, 21, 0.04)),
+    var(--white);
+  box-shadow:
+    0 0 0 3px rgba(250, 204, 21, 0.2),
+    var(--shadow);
+}
+
+.course-option-card.selected h3 {
+  color: #7c5a00;
 }
 
 .field-year {

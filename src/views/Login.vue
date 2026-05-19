@@ -1,26 +1,13 @@
 <script setup>
 import { computed, reactive, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
-import { setCurrentRole } from '../data/enrollmentStore'
+import { authenticateUser, startUserSession } from '../data/enrollmentStore'
 import AppLogo from '../components/AppLogo.vue'
 
 const router = useRouter()
 const attemptedSubmit = ref(false)
 const loginError = ref('')
 const showPassword = ref(false)
-
-const hardcodedAccounts = [
-  {
-    role: 'Student',
-    email: 'student@eduportal.com',
-    password: 'student123',
-  },
-  {
-    role: 'Admin',
-    email: 'admin@gmail.com',
-    password: 'admin123',
-  },
-]
 
 const form = reactive({
   email: '',
@@ -45,18 +32,14 @@ const handleLogin = async () => {
 
   if (fieldErrors.value.email || fieldErrors.value.password) return
 
-  const matchedAccount = hardcodedAccounts.find(
-    (account) =>
-      form.email.trim().toLowerCase() === account.email.toLowerCase() &&
-      form.password === account.password,
-  )
+  const matchedAccount = authenticateUser(form.email, form.password)
 
   if (!matchedAccount) {
     loginError.value = 'Invalid login credentials.'
     return
   }
 
-  setCurrentRole(matchedAccount.role)
+  startUserSession(matchedAccount)
   await router.push(matchedAccount.role === 'Admin' ? '/admin' : '/dashboard')
 }
 </script>

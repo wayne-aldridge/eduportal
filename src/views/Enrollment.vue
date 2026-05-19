@@ -212,6 +212,10 @@ const handleSubmit = () => {
       studentType: form.studentType,
     },
     completedRequirements: selectedRequirements.value,
+    accountCredentials: {
+      email: form.email,
+      password: form.password,
+    },
   })
 
   submitted.value = true
@@ -268,11 +272,20 @@ const handleSubmit = () => {
                   :key="course.title"
                   type="button"
                   :class="['course-option-card', { selected: form.selectedCourse === course.title }]"
+                  :aria-pressed="form.selectedCourse === course.title"
                   @click="form.selectedCourse = course.title"
                 >
                   <img class="course-option-image" :src="course.image" :alt="course.alt" />
                   <div class="course-option-copy">
-                    <span class="badge">{{ course.category }}</span>
+                    <div class="course-option-meta">
+                      <span class="badge">{{ course.category }}</span>
+                      <span
+                        v-if="form.selectedCourse === course.title"
+                        class="course-selected-pill"
+                      >
+                        Selected
+                      </span>
+                    </div>
                     <h3>{{ course.title }}</h3>
                     <p>{{ course.description }}</p>
                     <small>{{ course.duration }}</small>
@@ -522,8 +535,9 @@ const handleSubmit = () => {
 
                 <section class="review-section">
                   <div class="review-notice">
-                    By continuing, your student account will be created using the email address
-                    provided, and your enrollment application will be submitted for admin review.
+                    By continuing, your enrollment application will be submitted for admin
+                    review, and the email and password entered here will be used for future
+                    student login.
                   </div>
                 </section>
               </div>
@@ -539,9 +553,10 @@ const handleSubmit = () => {
             </div>
 
             <div v-else-if="currentStep === 5 && !submitted" class="step-panel">
-              <h2>Create Account &amp; Submit Enrollment</h2>
+              <h2>Set Login Details &amp; Submit Enrollment</h2>
               <p class="step-description">
-                Your student account will be created using the information you already provided.
+                Use these login details to access your student dashboard after enrollment
+                submission.
               </p>
 
               <div class="account-summary-panel">
